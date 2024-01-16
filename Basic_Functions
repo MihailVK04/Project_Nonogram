@@ -1,0 +1,30 @@
+//it checks for correctly chosen coordinates and choice for element
+void compareChosenCoordinate(char** matrix, char** sample, char choice,int x, int y, int& lives, int& emptySquares) {
+    if (choice == 's' && sample[x][y] == '1') {
+        matrix[x][y] = '#';
+    }
+    if (choice == 'e' && sample[x][y] == '1') {
+        matrix[x][y] = '#';
+        lives = lives - 1 ;
+        std::cout << "You have made a mistake!";
+    }
+    if (choice == 's' && sample[x][y] == '0') {
+        matrix[x][y] = 'X';
+        lives = lives - 1 ;
+        std::cout << "You have made a mistake!";
+    }
+    if (choice == 'e' && sample[x][y] == '0') {
+        matrix[x][y] = 'X';
+    }
+    emptySquares = emptySquares++;
+}
+
+//prints the matrix
+void printResult(char** matrix, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            std::cout << matrix[i][j];
+        }
+        std::cout << std::endl;
+    }
+}
