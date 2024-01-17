@@ -1,0 +1,40 @@
+void getSample( char a, std::string* sample, int& size) {
+    bool correct = false;
+    while (!correct)
+    {
+        checkForDificulty(a, correct);
+    }
+    srand(time(0));
+    unsigned int digit = 1 + rand() % 3;
+    std::string level = chosenLevel(a, digit);
+    std::fstream readLevel;
+    readLevel.open(level, std::fstream::in | std::fstream::app);
+    std::string buffer;
+    int i = 0;
+    while (getline(readLevel, buffer)) {
+        sample[i] = buffer;
+        i++;
+    }
+    size = i;
+}
+
+void newUser(std::string* sample,std::string* matrix, int& size) {
+    std::cout << "Choose dificulty:\n";
+    std::cout << "(E - Easy, N - Normal, I - Intermediate, H - Hard, M - Master)\n";
+    char a = '\0';
+    std::cin >> a;
+    getSample(a,sample, size);
+    emptyMatrix(matrix, size);
+}
+
+void checkForUser(std::string user, std::string* sample,std::string* matrix, int& size) {
+    std::fstream read;
+    read.open("LastUsers.txt", std::fstream::in | std::fstream::app);
+    std::string buffer;
+    while (getline(read, buffer)) {
+        if (user == buffer) {
+            oldUser(sample, matrix, user, size);
+        }
+    }
+    newUser(sample,matrix, size);
+}
