@@ -1,30 +1,64 @@
 //it checks for correctly chosen coordinates and choice for element
-void compareChosenCoordinate(char** matrix, char** sample, char choice,int x, int y, int& lives, int& emptySquares) {
-    if (choice == 's' && sample[x][y] == '1') {
-        matrix[x][y] = '#';
+void compareChosenCoordinate(std::string* matrix, std::string* sample, char& choice,int x, int y, int& lives, int& squares, int size) {
+    bool proceed = false;
+    while (!proceed) {
+        if (matrix[y][x] == 'X' || matrix[y][x] == '#') {
+            std::cout << "Choice already made! Reenter x and y:\n";
+            coordinatesInput(x, y, size);
+            actionInput(choice);
+            earlyQuiting(choice);
+        }
+        else {
+            proceed = true;
+        }
     }
-    if (choice == 'e' && sample[x][y] == '1') {
-        matrix[x][y] = '#';
+    if (choice == 's' && sample[y][x] == '1') {
+        matrix[y][x] = '#';
+    }
+    if (choice == 'e' && sample[y][x] == '1') {
+        matrix[y][x] = '#';
         lives = lives - 1 ;
-        std::cout << "You have made a mistake!";
+        std::cout << "You have made a mistake!\n";
     }
-    if (choice == 's' && sample[x][y] == '0') {
-        matrix[x][y] = 'X';
+    if (choice == 's' && sample[y][x] == '0') {
+        matrix[y][x] = 'X';
         lives = lives - 1 ;
-        std::cout << "You have made a mistake!";
+        std::cout << "You have made a mistake!\n";
     }
-    if (choice == 'e' && sample[x][y] == '0') {
-        matrix[x][y] = 'X';
+    if (choice == 'e' && sample[y][x] == '0') {
+        matrix[y][x] = 'X';
     }
-    emptySquares = emptySquares++;
+    squares = squares--;
 }
 
-//prints the matrix
-void printResult(char** matrix, int size) {
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            std::cout << matrix[i][j];
+//gets correctly the coordinates
+void coordinatesInput(int& x, int& y, int size) {
+    bool correctInput = false;
+    while (!correctInput) {
+        std::cin >> x;
+        std::cin >> y;
+        if (x >= 1 && x <= size && y >= 1 && y <= size) {
+            correctInput = true;
+            x = x - 1;
+            y = size - y;
+            x = 2 * x;
         }
-        std::cout << std::endl;
+        else {
+            std::cout << "Wrong input! Try again!\n";
+        }
+    }
+}
+
+//gets correct action from the user
+void actionInput(char& a) {
+    bool correctInput = false;
+    while (!correctInput) {
+        std::cin >> a;
+        if (a == 'e' || a == 's' || a == 'Q') {
+            correctInput = true;
+        }
+        else {
+            std::cout << "Wrong input! Try again!\n";
+        }
     }
 }
