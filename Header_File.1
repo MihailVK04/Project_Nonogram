@@ -4,32 +4,42 @@
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
+using namespace std;
 
-void fillingSample(std::string level, std::string* table, std::string* info, int& size) {
-    std::fstream readLevel;
-    readLevel.open(level, std::fstream::in | std::fstream::app);
-    std::string buffer;
+void fillingSample(string level, string* table, string* info, int& size, int& squares) {
+    fstream readLevel;
+    readLevel.open(level, fstream::in | fstream::app);
+    string buffer;
     int i = 0;
     int j = 0;
     bool seen = true;
+    bool seenAgain = true;
     while (getline(readLevel, buffer)) {
         if (buffer != ":" && seen) {
             table[i] = buffer;
             i++;
             continue;
         }
-        else {
+        else if(seen){
             seen = false;
+            continue;
         }
-        if (buffer != ":") {
+        if (buffer != ":" && seenAgain) {
             info[j] = buffer;
             j++;
+            continue;
         }
+        else if(seenAgain){
+            seenAgain = false;
+            continue;
+        }
+        squares = stoi(buffer);
     }
+    readLevel.close();
     size = i;
 }
 
-bool questionForOldUser(std::string a) {
+bool questionForOldUser(string a) {
     bool correct = false;
     while (!correct) {
         if (a == "y") {
@@ -41,14 +51,14 @@ bool questionForOldUser(std::string a) {
             return true;
         }
         else {
-            std::cout << "Wrong input! Try aggain!\n";
-            std::cin >> a;
+            cout << "Wrong input! Try aggain!\n";
+            cin >> a;
         }
     }
 }
 
-void emptyMatrix(std::string* matrix, int size) {
-    std::string row;
+void emptyMatrix(string* matrix, int size) {
+    string row;
     for (int i = 0; i < size; i++) {
         row = row + '_';
     }
@@ -57,29 +67,29 @@ void emptyMatrix(std::string* matrix, int size) {
     }
 }
 
-std::string chosenLevel(std::string a, unsigned int digit) {
-    std::string l;
+string chosenLevel(string a, unsigned int digit) {
+    string l;
     if (a == "E" || a == "N" || a == "I" || a == "H" || a == "M") {
         l = l + a;
     }
     if (digit >= 1 && digit <= 3) {
-        l = l + '.' + std::to_string(digit) + ".txt";
+        l = l + '.' + to_string(digit) + ".txt";
     }
     return l;
 }
 
-void checkForDificulty(std::string& a, bool& correct) {
+void checkForDificulty(string& a, bool& correct) {
     if (a == "E" || a == "N" || a == "I" || a == "H" || a == "M") {
         correct = true;
     }
     else {
-        std::cout << "Wrong input! Try again:\n";
+        cout << "Wrong input! Try again:\n";
         correct = false;
-        std::cin >> a;
+        cin >> a;
     }
 }
 
-void getSample(std::string a, std::string* sample, std::string* info, int& size) {
+void getSample(string a, string& fileName, string* sample, string* info, int& size, int& squares) {
     bool correct = false;
     while (!correct)
     {
@@ -87,25 +97,25 @@ void getSample(std::string a, std::string* sample, std::string* info, int& size)
     }
     srand(time(0));
     unsigned int digit = 1 + rand() % 3;
-    std::string level = chosenLevel(a, digit);
-    fillingSample(level, sample, info, size);
+    fileName = chosenLevel(a, digit);
+    fillingSample(fileName, sample, info, size, squares);
 }
 
-void newUser(std::string* sample, std::string* matrix, std::string* info, int& size) {
-    std::cout << "Choose dificulty:\n";
-    std::cout << "(E - Easy, N - Normal, I - Intermediate, H - Hard, M - Master)\n";
-    std::string a;
-    std::cin >> a;
-    getSample(a, sample, info, size);
+void choosingDificulty(string& fileName, string* sample, string* matrix, string* info, int& size, int& squares) {
+    cout << "Choose dificulty:\n";
+    cout << "(E - Easy, N - Normal, I - Intermediate, H - Hard, M - Master)\n";
+    string a;
+    cin >> a;
+    getSample(a, fileName, sample, info, size, squares);
     emptyMatrix(matrix, size);
 }
 
-void oldUser(std::string* sample, std::string* matrix,std::string* info, std::string name, int& size, int& lives, int& squares) {
-    std::string fileName, playerLives, leftSquares, buffer;
+void oldUser(string* sample, string* matrix, string* info,string& fileName, string name, int& size, int& lives, int& squares) {
+    string playerLives, leftSquares, buffer;
     bool endIf = true;
     name = name + ".txt";
-    std::fstream readPlayerProfile;
-    readPlayerProfile.open(name, std::fstream::in | std::fstream::app);
+    fstream readPlayerProfile;
+    readPlayerProfile.open(name, fstream::in | fstream::app);
     getline(readPlayerProfile, fileName);
     while (getline(readPlayerProfile, buffer)) {
         if (buffer != ":" && endIf) {
@@ -119,30 +129,32 @@ void oldUser(std::string* sample, std::string* matrix,std::string* info, std::st
         getline(readPlayerProfile, playerLives);
         getline(readPlayerProfile, leftSquares);
     }
-    lives = std::stoi(playerLives);
-    squares = std::stoi(leftSquares);
-    fillingSample(fileName, sample, info, size);
+    readPlayerProfile.close();
+    lives = stoi(playerLives);
+    squares = stoi(leftSquares);
+    fillingSample(fileName, sample, info, size, squares);
 }
 
-void checkForUser(std::string user, std::string* sample, std::string* matrix,std::string* info, int& size, int& lives, int& squares) {
+void checkForUser(string user, string& fileName, string* sample, string* matrix, string* info, int& size, int& lives, int& squares) {
     bool condition = true;
-    std::fstream read;
-    read.open("LastUsers.txt", std::fstream::in | std::fstream::app);
-    std::string buffer;
+    fstream read;
+    read.open("LastUsers.txt", fstream::in | fstream::app);
+    string buffer;
     while (getline(read, buffer)) {
         if (user == buffer) {
-            std::cout << "Do you want to play your last saved game?(y/n)\n";
-            std::string a;
-            std::cin >> a;
+            cout << "Do you want to play your last saved game?(y/n)\n";
+            string a;
+            cin >> a;
             condition = questionForOldUser(a);
             bool breaking = condition;
             if (breaking) {
                 break;
             }
-            oldUser(sample, matrix, info, user, size, lives, squares);
+            oldUser(sample, matrix, info, fileName, user, size, lives, squares);
         }
     }
+    read.close();
     if (condition) {
-        newUser(sample, matrix , info , size);
+        choosingDificulty(fileName, sample, matrix , info , size, squares);
     }
 }
