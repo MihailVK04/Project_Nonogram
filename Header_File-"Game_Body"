@@ -1,0 +1,189 @@
+#pragma once
+#include <iostream>
+#include <string>
+#include <fstream>
+#include "Input_Functions.h"
+using namespace std;
+
+void startGame(int& squares, string* sample, string* matrix, string* info, string user, string& fileName, int& lives, int& size);
+
+void checkColumn(string* sample, string* matrix, int x, int size) {
+    bool clearedColumn = true;
+    for (int i = 0; i < size; i++) {
+        if (sample[i][x] == '1' && matrix[i][x] != '#') {
+            clearedColumn = false;
+        }
+    }
+    if (clearedColumn) {
+        for (int i = 0; i < size; i++) {
+            if (sample[i][x] == '0') {
+                matrix[i][x] = 'X';
+            }
+        }
+    }
+}
+
+void checkRow(string* sample, string* matrix, int y, int size) {
+    bool clearedRows = true;
+    for (int i = 0; i < 2 * size - 1; i++) {
+        if (sample[y][i] == '1' && matrix[y][i] != '#') {
+            clearedRows = false;
+        }
+    }
+    if (clearedRows) {
+        for (int i = 0; i < 2 * size - 1; i++) {
+            if (sample[y][i] == '0') {
+                matrix[y][i] = 'X';
+            }
+        }
+    }
+}
+
+void coordinatesInput(int& x, int& y, int size) {
+    bool correctInput = false;
+    while (!correctInput) {
+        cin >> x;
+        cin >> y;
+        if (x >= 1 && x <= size && y >= 1 && y <= size) {
+            correctInput = true;
+            x = x - 1;
+            y = size - y;
+            x = 2 * x;
+        }
+        else {
+            cout << "Wrong input! Try again!\n";
+        }
+    }
+}
+
+void actionInput(char& a) {
+    bool correctInput = false;
+    while (!correctInput) {
+        std::cin >> a;
+        if (a == 'e' || a == 's' || a == 'Q') {
+            correctInput = true;
+        }
+        else {
+            cout << "Wrong input! Try again!\n";
+        }
+    }
+}
+
+bool earlyQuiting(char& a, string fileName, string user, string* matrix, int size, int lives, int squares) {
+    if (a == 'Q') {
+        user = user + ".txt";
+        ofstream clean(user);
+        clean.close();
+        fstream saving;
+        saving.open(user, fstream::out | fstream::app);
+        saving << fileName << endl;
+        for (int i = 0; i < size; i++) {
+            saving << matrix[i] << endl;
+        }
+        saving << ':' << endl;
+        saving << lives << endl;
+        saving << squares << endl;
+        saving.close();
+        return true;
+    }
+    return false;
+}
+
+void compareChosenCoordinate(string* matrix, string* sample, char& choice, int x, int y, int& lives, int& squares, int size) {
+    bool proceed = false;
+    while (!proceed) {
+        if (matrix[y][x] == 'X' || matrix[y][x] == '#') {
+            cout << "Choice already made! Reenter x and y and your action:\n";
+            coordinatesInput(x, y, size);
+            actionInput(choice);
+        }
+        if (choice == 'Q') {
+            cout << "You cant quit right now. Choose another action";
+        }
+        if (matrix[y][x] != 'X' && matrix[y][x] != '#' && choice != 'Q') {
+            proceed = true;
+        }
+    }
+    if (choice == 's' && sample[y][x] == '1') {
+        matrix[y][x] = '#';
+        squares = squares--;
+    }
+    if (choice == 'e' && sample[y][x] == '1') {
+        matrix[y][x] = '#';
+        lives = lives - 1;
+        cout << "You have made a mistake!\n";
+        squares = squares--;
+    }
+    if (choice == 's' && sample[y][x] == '0') {
+        matrix[y][x] = 'X';
+        lives = lives - 1;
+        cout << "You have made a mistake!\n";
+    }
+    if (choice == 'e' && sample[y][x] == '0') {
+        matrix[y][x] = 'X';
+    }
+}
+
+void printResult(char** matrix, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            cout << matrix[i][j];
+        }
+        cout << std::endl;
+    }
+}
+
+void endOfGameCheck(int lives, int squares) {
+    if (lives <= 0) {
+        cout << "Game over. You lost!\n";
+    }
+    if (squares == 0) {
+        cout << "Game over. You win!\n";
+    }
+}
+
+void anotherGame(string& fileName, string& user, string* sample, string* matrix, string* info, int& size, int& squares, int& lives) {
+    cout << "Do you want to play another game?(y/n)\n";
+    string a;
+    cin >> a;
+    if (a == "y") {
+        lives = 3;
+        choosingDificulty(fileName, sample, matrix, info, size, squares);
+        startGame(squares, sample, matrix, info, user, fileName, lives, size);
+    }
+    if (a == "n") {
+        return;
+    }
+
+}
+
+void startGame(int& squares, string* sample, string* matrix, string* info, string user, string& fileName, int& lives, int& size) {
+    bool saved = false;
+    while (squares > 0 && lives > 0) {
+        for (int i = 0; i < size; i++) {
+            cout << matrix[i] << endl;
+        }
+        for (int i = 0; i <= size; i++) {
+            cout << info[i] << endl;
+        }
+        cout << "Lives: ";
+        cout << lives << endl;
+        cout << "Enter coordinates x and y:\n";
+        int x = 0;
+        int y = 0;
+        coordinatesInput(x, y, size);
+        cout << "Enter square, empty or quiting( s, e or Q):\n";
+        char a;
+        actionInput(a);
+        if (earlyQuiting(a, fileName, user, matrix, size, lives, squares)) {
+            saved = true;
+            break;
+        }
+        compareChosenCoordinate(matrix, sample, a, x, y, lives, squares, size);
+        checkColumn(sample, matrix, x, size);
+        checkRow(sample, matrix, y, size);
+        endOfGameCheck(lives, squares);
+    }
+    return;
+    anotherGame(fileName, user, sample, matrix, info, size, squares, lives);
+}
