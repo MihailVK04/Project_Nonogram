@@ -128,15 +128,6 @@ void compareChosenCoordinate(string* matrix, string* sample, char& choice, int x
     }
 }
 
-void printResult(char** matrix, int size) {
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            cout << matrix[i][j];
-        }
-        cout << std::endl;
-    }
-}
-
 void endOfGameCheck(int lives, int squares) {
     if (lives <= 0) {
         cout << "Game over. You lost!\n";
